@@ -1,8 +1,9 @@
 ---
 paths:
-  - "Slides/**/*.tex"
-  - "Quarto/**/*.qmd"
-  - "scripts/**/*.R"
+  - "merit_aid-04012026/paper/**/*.tex"
+  - "merit_aid-04012026/code/**/*.R"
+  - "merit_aid-04012026/code/**/*.py"
+  - "merit_aid-04012026/code/**/*.do"
 ---
 
 # Quality Gates & Scoring Rubrics
@@ -13,19 +14,19 @@ paths:
 - **90/100 = PR** -- ready for deployment
 - **95/100 = Excellence** -- aspirational
 
-## Quarto Slides (.qmd)
+## LaTeX Paper (.tex)
 
 | Severity | Issue | Deduction |
 |----------|-------|-----------|
-| Critical | Compilation failure | -100 |
-| Critical | Equation overflow | -20 |
-| Critical | Broken citation | -15 |
+| Critical | Compilation failure (pdflatex + biber) | -100 |
+| Critical | Undefined citation | -15 |
 | Critical | Typo in equation | -10 |
-| Major | Text overflow | -5 |
-| Major | TikZ label overlap | -5 |
+| Critical | Overfull hbox > 10pt | -10 |
+| Major | Missing figure file | -5 |
 | Major | Notation inconsistency | -3 |
-| Minor | Font size reduction | -1 per slide |
-| Minor | Long lines (>100 chars) | -1 (EXCEPT documented math formulas) |
+| Major | Table formatting error | -3 |
+| Minor | Orphaned/widow lines | -1 |
+| Minor | Long lines in source (>100 chars) | -1 (EXCEPT math formulas) |
 
 ## R Scripts (.R)
 
@@ -37,13 +38,25 @@ paths:
 | Major | Missing set.seed() | -10 |
 | Major | Missing figure generation | -5 |
 
-## Beamer Slides (.tex)
+## Python Scripts (.py)
 
 | Severity | Issue | Deduction |
 |----------|-------|-----------|
-| Critical | XeLaTeX compilation failure | -100 |
-| Critical | Undefined citation | -15 |
-| Critical | Overfull hbox > 10pt | -10 |
+| Critical | Import/syntax errors | -100 |
+| Critical | Hardcoded absolute paths | -20 |
+| Major | Figure not saved to output/ | -10 |
+| Major | Missing axis labels/title | -5 |
+| Minor | Non-publication font size | -2 |
+
+## Stata Scripts (.do)
+
+| Severity | Issue | Deduction |
+|----------|-------|-----------|
+| Critical | Syntax errors | -100 |
+| Critical | Hardcoded absolute paths | -20 |
+| Major | Missing `set seed` | -10 |
+| Major | Undocumented sample restriction | -5 |
+| Major | Missing clustering specification | -5 |
 
 ## Enforcement
 
@@ -56,12 +69,12 @@ paths:
 Generated **only at merge time**. Use `templates/quality-report.md` for format.
 Save to `quality_reports/merges/YYYY-MM-DD_[branch-name].md`.
 
-## Tolerance Thresholds (Research)
-
-<!-- Customize for your domain -->
+## Tolerance Thresholds (Econometric Estimates)
 
 | Quantity | Tolerance | Rationale |
 |----------|-----------|-----------|
-| Point estimates | [e.g., 1e-6] | [Numerical precision] |
-| Standard errors | [e.g., 1e-4] | [MC variability] |
-| Coverage rates | [e.g., +/- 0.01] | [MC with B reps] |
+| Sample sizes (N) | Exact match | Integer, no reason for difference |
+| Point estimates | < 0.01 | Display rounding |
+| Standard errors | < 0.05 | Clustering/bootstrap variation |
+| P-values | Same significance level | Exact p may differ slightly |
+| Quintile shares | < 0.1pp | Display rounding |

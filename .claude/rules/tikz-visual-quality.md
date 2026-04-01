@@ -1,7 +1,6 @@
 ---
 paths:
-  - "Slides/**/*.tex"
-  - "Figures/**/*.tex"
+  - "merit_aid-04012026/paper/figures/tikz/**/*.tex"
 ---
 
 # TikZ Visual Quality Standards

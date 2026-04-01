@@ -1,8 +1,9 @@
 ---
 paths:
-  - "scripts/**/*.R"
+  - "merit_aid-04012026/code/**/*.R"
+  - "merit_aid-04012026/code/**/*.do"
+  - "merit_aid-04012026/code/**/*.py"
   - "explorations/**"
-  - "Figures/**/*.R"
 ---
 
 # Research Project Orchestrator (Simplified)

@@ -1,6 +1,6 @@
 ---
 paths:
-  - "master_supporting_docs/**"
+  - "merit_aid-04012026/literature/**"
 ---
 
 # Robust PDF Processing

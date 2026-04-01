@@ -1,12 +1,8 @@
 # CLAUDE.MD -- Academic Project Development with Claude Code
 
-<!-- HOW TO USE: Replace [BRACKETED PLACEHOLDERS] with your project info.
-     Customize Beamer environments and CSS classes for your theme.
-     Keep this file under ~150 lines — Claude loads it every session.
-     See the guide at docs/workflow-guide.html for full documentation. -->
-
-**Project:** [YOUR PROJECT NAME]
-**Institution:** [YOUR INSTITUTION]
+**Project:** Merit Aid, Sorting, and Institutional Access
+**Authors:** Kidd, Soltanian, Sotomayor, Uceda-Sosa
+**Institution:** Columbia University
 **Branch:** main
 
 ---
@@ -15,7 +11,7 @@
 
 - **Plan first** -- enter plan mode before non-trivial tasks; save plans to `quality_reports/plans/`
 - **Verify after** -- compile/render and confirm output at the end of every task
-- **Single source of truth** -- Beamer `.tex` is authoritative; Quarto `.qmd` derives from it
+- **Single source of truth** -- LaTeX `paper/main.tex` is authoritative; figures flow from `output/`
 - **Quality gates** -- nothing ships below 80/100
 - **[LEARN] tags** -- when corrected, save `[LEARN:category] wrong → right` to MEMORY.md
 
@@ -24,20 +20,31 @@
 ## Folder Structure
 
 ```
-[YOUR-PROJECT]/
-├── CLAUDE.MD                    # This file
-├── .claude/                     # Rules, skills, agents, hooks
-├── Bibliography_base.bib        # Centralized bibliography
-├── Figures/                     # Figures and images
-├── Preambles/header.tex         # LaTeX headers
-├── Slides/                      # Beamer .tex files
-├── Quarto/                      # RevealJS .qmd files + theme
-├── docs/                        # GitHub Pages (auto-generated)
-├── scripts/                     # Utility scripts + R code
+merit_aid-04012026/
+├── paper/                       # LaTeX source (main.tex + sections/)
+│   ├── main.tex                 # Master document (article, 11pt, biblatex/biber)
+│   ├── sections/                # \input{} files (intro, background, theory, ...)
+│   ├── figures/tikz/            # TikZ diagram source
+│   ├── expectations.bib         # Bibliography
+│   └── slides.tex               # Conference slides (Beamer)
+├── code/
+│   ├── stata/                   # Primary estimation (.do files)
+│   ├── R/                       # Wild cluster bootstrap, Rambachan-Roth
+│   └── python/                  # Figure generation (matplotlib)
+├── data/
+│   ├── raw/                     # Chetty et al. (2020), IPEDS (gitignored)
+│   ├── clean/                   # Analysis-ready datasets (gitignored)
+│   └── codebook/                # Data documentation
+├── output/
+│   ├── estimates/               # CSV coefficient exports from Stata
+│   ├── figures/                 # PDF figures (Python matplotlib)
+│   ├── modified_figs/           # Latest polished figures
+│   ├── tables/                  # .tex table fragments (Stata esttab)
+│   └── diagnostics/             # Diagnostic outputs
+├── literature/                  # Papers, annotated bibliography, lit map
+├── docs/                        # Planning docs, briefings, session logs
 ├── quality_reports/             # Plans, session logs, merge reports
-├── explorations/                # Research sandbox (see rules)
-├── templates/                   # Session log, quality report templates
-└── master_supporting_docs/      # Papers and existing slides
+└── explorations/                # Research sandbox (see rules)
 ```
 
 ---
@@ -45,17 +52,21 @@
 ## Commands
 
 ```bash
-# LaTeX (3-pass, XeLaTeX only)
-cd Slides && TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode file.tex
-BIBINPUTS=..:$BIBINPUTS bibtex file
-TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode file.tex
-TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode file.tex
+# LaTeX paper (3-pass, pdflatex + biber)
+cd merit_aid-04012026/paper
+pdflatex -interaction=nonstopmode main.tex
+biber main
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
 
-# Deploy Quarto to GitHub Pages
-./scripts/sync_to_docs.sh LectureN
+# Stata (from project root)
+cd merit_aid-04012026 && stata-mp -b do code/stata/filename.do
 
-# Quality score
-python scripts/quality_score.py Quarto/file.qmd
+# R scripts
+cd merit_aid-04012026 && Rscript code/R/filename.R
+
+# Python figures
+cd merit_aid-04012026 && python3 code/python/fig_name.py
 ```
 
 ---
@@ -74,24 +85,15 @@ python scripts/quality_score.py Quarto/file.qmd
 
 | Command | What It Does |
 |---------|-------------|
-| `/compile-latex [file]` | 3-pass XeLaTeX + bibtex |
-| `/deploy [LectureN]` | Render Quarto + sync to docs/ |
-| `/extract-tikz [LectureN]` | TikZ → PDF → SVG |
+| `/compile-latex [file]` | 3-pass pdflatex + biber |
 | `/proofread [file]` | Grammar/typo/overflow review |
-| `/visual-audit [file]` | Slide layout audit |
-| `/pedagogy-review [file]` | Narrative, notation, pacing review |
 | `/review-r [file]` | R code quality review |
-| `/qa-quarto [LectureN]` | Adversarial Quarto vs Beamer QA |
-| `/slide-excellence [file]` | Combined multi-agent review |
-| `/translate-to-quarto [file]` | Beamer → Quarto translation |
+| `/review-paper [file]` | Manuscript review |
 | `/validate-bib` | Cross-reference citations |
-| `/devils-advocate` | Challenge slide design |
-| `/create-lecture` | Full lecture creation |
 | `/commit [msg]` | Stage, commit, PR, merge |
 | `/lit-review [topic]` | Literature search + synthesis |
 | `/research-ideation [topic]` | Research questions + strategies |
 | `/interview-me [topic]` | Interactive research interview |
-| `/review-paper [file]` | Manuscript review |
 | `/data-analysis [dataset]` | End-to-end R analysis |
 | `/learn [skill-name]` | Extract discovery into persistent skill |
 | `/context-status` | Show session health + context usage |
@@ -99,38 +101,51 @@ python scripts/quality_score.py Quarto/file.qmd
 
 ---
 
-<!-- CUSTOMIZE: Replace the example entries below with your own
-     Beamer environments and Quarto CSS classes. These are examples
-     from the original project — delete them and add yours. -->
+## LaTeX Conventions
 
-## Beamer Custom Environments
+- Document class: `article`, 11pt, biblatex with biber backend (APA style)
+- Bibliography: `expectations.bib` in `paper/`
+- Figures: PDF format from Python matplotlib, path `../output/figures/`
+- Tables: Generated by Stata esttab, stored as `.tex` fragments in `output/tables/`
+- Section files in `paper/sections/`, included via `\input{}`
+- All equations numbered
 
-| Environment       | Effect        | Use Case       |
-|-------------------|---------------|----------------|
-| `[your-env]`      | [Description] | [When to use]  |
+## Code Pipeline (SSOT)
 
-<!-- Example entries (delete and replace with yours):
-| `keybox` | Gold background box | Key points |
-| `highlightbox` | Gold left-accent box | Highlights |
-| `definitionbox[Title]` | Blue-bordered titled box | Formal definitions |
--->
+```
+Stata (.do) → estimates (.csv) + tables (.tex)
+Python (.py) → figures (.pdf) using estimates
+LaTeX (main.tex) → \input{sections/} + \includegraphics{} + \input{tables}
+```
 
-## Quarto CSS Classes
+---
 
-| Class              | Effect        | Use Case       |
-|--------------------|---------------|----------------|
-| `[.your-class]`    | [Description] | [When to use]  |
+## Voice and Style
 
-<!-- Example entries (delete and replace with yours):
-| `.smaller` | 85% font | Dense content slides |
-| `.positive` | Green bold | Good annotations |
--->
+- Active voice. Short sentences for claims, longer for qualifications.
+- No: "it is important to note," "delve into," "crucial," "noteworthy"
+- Define every variable on first use.
+- State identification assumption before the specification.
+- Lead with the result, then the robustness.
+- "We" not "this paper" or "the authors."
 
 ---
 
 ## Current Project State
 
-| Lecture | Beamer | Quarto | Key Content |
-|---------|--------|--------|-------------|
-| 1: [Topic] | `Lecture01_Topic.tex` | `Lecture1_Topic.qmd` | [Brief description] |
-| 2: [Topic] | `Lecture02_Topic.tex` | -- | [Brief description] |
+| Section | File | Status |
+|---------|------|--------|
+| Introduction | `sections/introduction.tex` | Drafted |
+| Background | `sections/background.tex` | Drafted |
+| Theory | `sections/theory.tex` | Drafted |
+| Data | `sections/data.tex` | Drafted |
+| Empirical Strategy | `sections/empirical_strategy.tex` | Drafted |
+| Results | `sections/results.tex` | Drafted |
+| Robustness | `sections/robustness.tex` | Drafted |
+| Discussion | `sections/discussion.tex` | Drafted |
+| Conclusion | `sections/conclusion.tex` | Drafted |
+| Cross-State Extension | `sections/cross_state.tex` | Drafted |
+| Georgia Extension | `sections/georgia.tex` | Drafted |
+| Figures Appendix | `sections/figures.tex` | Drafted |
+| Tables Appendix | `sections/tables.tex` | Drafted |
+| Conference Slides | `slides.tex` | Drafted |

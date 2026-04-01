@@ -1,7 +1,7 @@
 ---
 paths:
-  - "scripts/**/*.R"
-  - "Figures/**/*.R"
+  - "merit_aid-04012026/code/**/*.R"
+  - "merit_aid-04012026/code/**/*.do"
 ---
 
 # Replication-First Protocol

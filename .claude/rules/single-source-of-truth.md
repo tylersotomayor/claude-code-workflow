@@ -1,69 +1,66 @@
 ---
 paths:
-  - "Figures/**/*"
-  - "Quarto/**/*.qmd"
-  - "Slides/**/*.tex"
+  - "merit_aid-04012026/paper/**/*.tex"
+  - "merit_aid-04012026/output/**"
+  - "merit_aid-04012026/code/**"
 ---
 
 # Single Source of Truth: Enforcement Protocol
 
-**The Beamer `.tex` file is the authoritative source for ALL content.** Everything else is derived.
+**The code pipeline is the authoritative source for all empirical results.**
 
 ## The SSOT Chain
 
 ```
-Beamer .tex (SOURCE OF TRUTH)
-  ├── extract_tikz.tex → PDF → SVGs (derived)
-  ├── Quarto .qmd → HTML (derived)
-  ├── Bibliography_base.bib (shared)
-  └── Figures/LectureN/*.rds → plotly charts (data source)
+Stata (.do files) = SOURCE OF TRUTH for estimates
+  ├── output/estimates/*.csv (coefficient exports)
+  ├── output/tables/*.tex (esttab table fragments)
+  └── output/logs/ (regression logs)
 
-NEVER edit derived artifacts independently.
-ALWAYS propagate changes from source → derived.
+Python (.py files) = SOURCE OF TRUTH for figures
+  ├── Reads: output/estimates/*.csv
+  └── Writes: output/figures/*.pdf
+
+LaTeX (paper/main.tex) = SOURCE OF TRUTH for narrative
+  ├── \input{sections/*} (prose)
+  ├── \includegraphics from output/figures/
+  ├── \input from output/tables/
+  └── expectations.bib (citations)
+
+NEVER manually edit output/ artifacts.
+ALWAYS regenerate from code when estimates change.
 ```
 
 ---
 
-## TikZ Freshness Protocol (MANDATORY)
+## Consistency Checks
 
-**Before using ANY TikZ SVG in a Quarto slide, verify it matches the current Beamer source.**
+Before any commit that includes paper changes:
 
-### Diff-Check Procedure
-
-1. Read the TikZ block from the Beamer `.tex` file
-2. Read the corresponding block from `Figures/LectureN/extract_tikz.tex`
-3. Compare EVERY coordinate, label, color, opacity, and anchor point
-4. If ANY difference exists: update `extract_tikz.tex` from Beamer, recompile, regenerate SVGs
-5. Only then reference the SVG in the QMD
-
-### When to Re-Extract
-
-Re-extract ALL TikZ diagrams when:
-- The Beamer `.tex` file has been modified since last extraction
-- Starting a new Quarto translation
-- Any TikZ-related quality issue is reported
-- Before any commit that includes QMD changes
+1. **Numbers in text match tables:** Every estimate cited in prose must match the corresponding table cell
+2. **Figures match estimates:** Plotted coefficients must come from the CSV exports, not hardcoded
+3. **Table fragments are current:** Re-run Stata if table .tex files are stale
+4. **Figure captions match content:** Description matches what the figure actually shows
 
 ---
 
-## Environment Parity (MANDATORY)
+## When to Re-Run Code
 
-**Every Beamer environment MUST have a CSS equivalent before translation begins.**
-
-1. Scan the Beamer source for all custom environments
-2. Check each against your theme SCSS file
-3. If ANY environment is missing from SCSS, create it BEFORE translating
+Re-run the affected pipeline step when:
+- A .do file has been modified → re-run Stata, then Python figures, then recompile LaTeX
+- A .py figure script has been modified → re-run Python, then recompile LaTeX
+- Sample restrictions change → re-run full pipeline from Stata
+- A new robustness check is added → new .do file + new .py figure + update LaTeX
 
 ---
 
 ## Content Fidelity Checklist
 
 ```
-[ ] Frame count: Beamer frames == Quarto slides
-[ ] Math check: every equation appears with identical notation
-[ ] Citation check: every \cite has a @key in Quarto
-[ ] Environment check: every Beamer box has CSS equivalent
-[ ] Figure check: every \includegraphics has SVG or plotly equivalent
-[ ] No added content: Quarto does not invent slides not in Beamer
-[ ] No dropped content: every Beamer idea appears in Quarto
+[ ] All estimates in text match table values
+[ ] All figures generated from current CSV exports
+[ ] No manually hardcoded numbers in LaTeX (derive from tables)
+[ ] Citation keys in text resolve in expectations.bib
+[ ] Figure numbering matches \label/\ref
+[ ] Table numbering matches \label/\ref
 ```

@@ -1,8 +1,6 @@
 ---
 paths:
-  - "**/*.R"
-  - "Figures/**/*.R"
-  - "scripts/**/*.R"
+  - "merit_aid-04012026/code/R/**/*.R"
 ---
 
 # R Code Standards
@@ -27,40 +25,40 @@ paths:
 
 ## 3. Domain Correctness
 
-<!-- Customize for your field's known pitfalls -->
-- Verify estimator implementations match slide formulas
-- Check known package bugs (document below in Common Pitfalls)
+- Verify estimator implementations match paper specifications
+- Wild cluster bootstrap: check number of clusters, seed, and reps match paper
+- Rambachan-Roth: verify delta parameterization matches claimed sensitivity
 
 ## 4. Visual Identity
 
 ```r
-# --- Your institutional palette ---
-primary_blue  <- "#012169"
-primary_gold  <- "#f2a900"
-accent_gray   <- "#525252"
+# --- Columbia palette ---
+columbia_blue  <- "#012169"
+columbia_light <- "#75AADB"
+accent_gray    <- "#525252"
 positive_green <- "#15803d"
-negative_red  <- "#b91c1c"
+negative_red   <- "#b91c1c"
 ```
 
 ### Custom Theme
 ```r
-theme_custom <- function(base_size = 14) {
+theme_custom <- function(base_size = 12) {
   theme_minimal(base_size = base_size) +
     theme(
-      plot.title = element_text(face = "bold", color = primary_blue),
+      plot.title = element_text(face = "bold", color = columbia_blue),
       legend.position = "bottom"
     )
 }
 ```
 
-### Figure Dimensions for Beamer
+### Figure Dimensions for Article
 ```r
-ggsave(filepath, width = 12, height = 5, bg = "transparent")
+ggsave(filepath, width = 6.5, height = 4.5, dpi = 300)
 ```
 
 ## 5. RDS Data Pattern
 
-**Heavy computations saved as RDS; slide rendering loads pre-computed data.**
+**Heavy computations saved as RDS; downstream scripts load pre-computed data.**
 
 ```r
 saveRDS(result, file.path(out_dir, "descriptive_name.rds"))
@@ -68,11 +66,11 @@ saveRDS(result, file.path(out_dir, "descriptive_name.rds"))
 
 ## 6. Common Pitfalls
 
-<!-- Add your field-specific pitfalls here -->
 | Pitfall | Impact | Prevention |
 |---------|--------|------------|
-| Missing `bg = "transparent"` | White boxes on slides | Always include in ggsave() |
-| Hardcoded paths | Breaks on other machines | Use relative paths |
+| Hardcoded paths | Breaks on other machines | Use relative paths from project root |
+| Missing `set.seed()` | Non-reproducible bootstrap | Always set at top of script |
+| Wrong cluster variable | Invalid inference | Cluster at state level per paper spec |
 
 ## 7. Line Length & Mathematical Exceptions
 
@@ -80,17 +78,9 @@ saveRDS(result, file.path(out_dir, "descriptive_name.rds"))
 
 **Exception: Mathematical Formulas** -- lines may exceed 100 chars **if and only if:**
 
-1. Breaking the line would harm readability of the math (influence functions, matrix ops, finite-difference approximations, formula implementations matching paper equations)
-2. An inline comment explains the mathematical operation:
-   ```r
-   # Sieve projection: inner product of residuals onto basis functions P_k
-   alpha_k <- sum(r_i * basis[, k]) / sum(basis[, k]^2)
-   ```
-3. The line is in a numerically intensive section (simulation loops, estimation routines, inference calculations)
-
-**Quality Gate Impact:**
-- Long lines in non-mathematical code: minor penalty (-1 to -2 per line)
-- Long lines in documented mathematical sections: no penalty
+1. Breaking the line would harm readability of the math
+2. An inline comment explains the mathematical operation
+3. The line is in a numerically intensive section
 
 ## 8. Code Quality Checklist
 
@@ -99,7 +89,7 @@ saveRDS(result, file.path(out_dir, "descriptive_name.rds"))
 [ ] set.seed() once at top
 [ ] All paths relative
 [ ] Functions documented (Roxygen)
-[ ] Figures: transparent bg, explicit dimensions
+[ ] Figures: explicit dimensions, 300 dpi
 [ ] RDS: every computed object saved
 [ ] Comments explain WHY not WHAT
 ```
